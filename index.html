@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>マルチログ | MULCH-LOG</title>
+    <title>UNIV-LOG Premium</title>
     <style>
         :root { --blue: #005596; --red: #e60012; --white: #ffffff; --bg: #f0f2f5; }
         body { background: var(--bg); color: #333; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 30px; }
         
         /* トリコロール・ヘッダー */
         header { background: var(--blue); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--red); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .app-title { margin: 0; font-size: 1.6rem; letter-spacing: 4px; font-style: italic; font-weight: bold; }
+        h1 { margin: 0; font-size: 1.6rem; letter-spacing: 4px; font-style: italic; }
 
         /* メインアクション */
         .btn-add { background: var(--red); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; margin: 15px 0; width: 90%; cursor: pointer; box-shadow: 0 4px 0 #a0000d; }
@@ -20,27 +20,27 @@
 
         /* 検索バー */
         .search-container { position: relative; margin-bottom: 15px; }
-        .search-box { width: 100%; padding: 12px 15px; border: 2px solid var(--blue); border-radius: 25px; font-size: 1rem; outline: none; box-sizing: border-box; background: white; }
+        .search-box { width: 100%; padding: 12px 15px; border: 2px solid var(--blue); border-radius: 25px; font-size: 1rem; outline: none; box-sizing: border-box; }
 
         /* ジャンルフィルター */
         #filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-        #filter-bar::-webkit-scrollbar { display: none; }
         .filter-tag { background: white; color: var(--blue); border: 1px solid var(--blue); padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .filter-tag.active { background: var(--blue); color: white; }
 
-        /* 入力フォーム */
+        /* 入力フォーム（明るく見やすく） */
         .form-panel { background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--blue); text-align: left; margin-bottom: 25px; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .form-group { margin-bottom: 18px; }
         label { display: block; font-size: 0.9rem; font-weight: bold; color: var(--blue); margin-bottom: 8px; }
         input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; background: #fafafa; }
         
-        /* ワンタッチ星評価 */
+        /* 噂のワンタッチ星評価（CSS魔法） */
         .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; font-size: 2.5rem; }
         .star-rating input { display: none; }
         .star-rating label { color: #ddd; cursor: pointer; transition: 0.2s; }
         .star-rating input:checked ~ label { color: #ffcc00; text-shadow: 0 0 5px rgba(255,204,0,0.5); }
+        .star-rating label:hover, .star-rating label:hover ~ label { color: #ffdd44; }
 
-        /* ログカード */
+        /* ログカード（トリコロール装飾） */
         .log-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; border-left: 8px solid var(--blue); text-align: left; overflow: hidden; }
         .log-img { width: 110px; height: 110px; border-radius: 10px; object-fit: cover; background: #eee; border: 1px solid #ddd; }
         .log-info { flex: 1; }
@@ -54,8 +54,7 @@
 <body>
 
 <header>
-    <div style="font-size: 2rem; margin-bottom: 5px;">🇫🇷</div>
-    <h1 class="app-title">マルチログ</h1>
+    <h1>UNIV-LOG</h1>
 </header>
 
 <main>
@@ -70,7 +69,7 @@
     <section id="form-panel" class="form-panel">
         <div class="form-group"><label>ジャンル（プラモ、飲食店、映画など）</label><input type="text" id="category" placeholder="何でも自由に！"></div>
         <div class="form-group"><label>タイトル</label><input type="text" id="title" placeholder="作品名や店名"></div>
-        <div class="form-group"><label>写真を選択 / カメラで撮る</label><input type="file" id="imageFile" accept="image/*"></div>
+        <div class="form-group"><label>写真を選択 / カメラで撮る</label><input type="file" id="imageFile" accept="image/*" style="font-size:0.8rem;"></div>
         <div class="form-group">
             <label>評価（星をタップ！）</label>
             <div class="star-rating">
@@ -82,20 +81,20 @@
             </div>
         </div>
         <div class="form-group"><label>メモ</label><textarea id="desc" rows="4" placeholder="感想を自由に綴ってくださいませ"></textarea></div>
-        <button onclick="saveLog()" class="btn-add" style="width:100%; background:var(--blue); box-shadow:0 4px 0 #00335a;">アーカイブに保存！</button>
+        <button onclick="saveLog()" class="btn-add" style="width:100%; background:var(--blue); box-shadow:0 4px 0 #00335a;">この内容でアーカイブ！</button>
     </section>
 
     <div id="log-feed"></div>
 </main>
 
 <script>
-    // 保存キーも一新して「マルチログ」専用にしますわ
-    let logs = JSON.parse(localStorage.getItem('mulch_log_final')) || [];
+    let logs = JSON.parse(localStorage.getItem('unilog_v3')) || [];
     let currentFilter = 'ALL';
 
     function toggleForm() {
         const p = document.getElementById('form-panel');
         p.style.display = p.style.display === 'block' ? 'none' : 'block';
+        window.scrollTo({top: 0, behavior: 'smooth'});
     }
 
     async function saveLog() {
@@ -122,14 +121,14 @@
         };
 
         logs.unshift(data);
-        localStorage.setItem('mulch_log_final', JSON.stringify(logs));
+        localStorage.setItem('unilog_v3', JSON.stringify(logs));
         location.reload(); 
     }
 
     function deleteLog(id) {
         if(confirm('この思い出を消去してもよろしくて？')) {
             logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('mulch_log_final', JSON.stringify(logs));
+            localStorage.setItem('unilog_v3', JSON.stringify(logs));
             render();
         }
     }
