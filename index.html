@@ -3,165 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UNIV-LOG Premium</title>
+    <title>マルチログ | AI QR Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
     <style>
-        :root { --blue: #005596; --red: #e60012; --white: #ffffff; --bg: #f0f2f5; }
-        body { background: var(--bg); color: #333; font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 30px; }
+        :root { --blue: #005596; --red: #e60012; --white: #ffffff; --bg: #f8f9fa; }
+        body { background: var(--bg); font-family: -apple-system, sans-serif; margin: 0; padding-bottom: 50px; overflow-x: hidden; }
         
         /* トリコロール・ヘッダー */
-        header { background: var(--blue); color: white; padding: 20px; text-align: center; border-bottom: 5px solid var(--red); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h1 { margin: 0; font-size: 1.6rem; letter-spacing: 4px; font-style: italic; }
-
-        /* メインアクション */
-        .btn-add { background: var(--red); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; font-size: 1.1rem; margin: 15px 0; width: 90%; cursor: pointer; box-shadow: 0 4px 0 #a0000d; }
-        .btn-add:active { transform: translateY(2px); box-shadow: 0 2px 0 #a0000d; }
-
-        main { max-width: 600px; margin: 0 auto; padding: 15px; text-align: center; }
-
-        /* 検索バー */
-        .search-container { position: relative; margin-bottom: 15px; }
-        .search-box { width: 100%; padding: 12px 15px; border: 2px solid var(--blue); border-radius: 25px; font-size: 1rem; outline: none; box-sizing: border-box; }
-
-        /* ジャンルフィルター */
-        #filter-bar { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scrollbar-width: none; }
-        .filter-tag { background: white; color: var(--blue); border: 1px solid var(--blue); padding: 8px 18px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; cursor: pointer; white-space: nowrap; }
-        .filter-tag.active { background: var(--blue); color: white; }
-
-        /* 入力フォーム（明るく見やすく） */
-        .form-panel { background: white; padding: 25px; border-radius: 15px; border: 2px solid var(--blue); text-align: left; margin-bottom: 25px; display: none; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-size: 0.9rem; font-weight: bold; color: var(--blue); margin-bottom: 8px; }
-        input[type="text"], textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 1rem; background: #fafafa; }
+        header { background: var(--blue); color: white; padding: 15px; text-align: center; border-bottom: 5px solid var(--red); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         
-        /* 噂のワンタッチ星評価（CSS魔法） */
-        .star-rating { display: flex; flex-direction: row-reverse; justify-content: flex-end; font-size: 2.5rem; }
-        .star-rating input { display: none; }
-        .star-rating label { color: #ddd; cursor: pointer; transition: 0.2s; }
-        .star-rating input:checked ~ label { color: #ffcc00; text-shadow: 0 0 5px rgba(255,204,0,0.5); }
-        .star-rating label:hover, .star-rating label:hover ~ label { color: #ffdd44; }
+        /* 可愛いトリコロールアイコン（CSSで作成） */
+        .app-icon { width: 50px; height: 50px; margin: 0 auto 10px; background: white; border-radius: 12px; display: flex; overflow: hidden; border: 2px solid #ddd; }
+        .icon-part { flex: 1; height: 100%; }
+        .icon-blue { background: var(--blue); }
+        .icon-white { background: white; }
+        .icon-red { background: var(--red); }
 
-        /* ログカード（トリコロール装飾） */
-        .log-card { background: white; border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; gap: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; border-left: 8px solid var(--blue); text-align: left; overflow: hidden; }
-        .log-img { width: 110px; height: 110px; border-radius: 10px; object-fit: cover; background: #eee; border: 1px solid #ddd; }
-        .log-info { flex: 1; }
-        .log-cat-tag { display: inline-block; background: var(--blue); color: white; font-size: 0.7rem; padding: 3px 10px; border-radius: 5px; margin-bottom: 8px; font-weight: bold; }
-        .log-title { font-size: 1.2rem; font-weight: bold; margin: 0 0 5px 0; color: #111; }
-        .log-stars { color: #ffcc00; font-size: 1rem; margin-bottom: 8px; letter-spacing: 2px; }
-        .log-desc { font-size: 0.95rem; color: #444; white-space: pre-wrap; line-height: 1.5; border-top: 1px dashed #eee; padding-top: 8px; }
-        .del-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #ccc; font-size: 1.2rem; cursor: pointer; }
+        main { max-width: 600px; margin: 0 auto; padding: 15px; }
+
+        /* QRカメラエリア */
+        #camera-container { width: 100%; aspect-ratio: 1; background: #000; border-radius: 20px; overflow: hidden; position: relative; border: 4px solid var(--blue); margin-bottom: 15px; }
+        #video { width: 100%; height: 100%; object-fit: cover; }
+        #qr-shutter { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px solid var(--red); box-sizing: border-box; opacity: 0.3; animation: scan 2s infinite; }
+        @keyframes scan { 0% { top: -100%; } 100% { top: 100%; } }
+
+        /* AI Tips パネル */
+        #ai-panel { background: white; border-radius: 15px; padding: 20px; border-left: 8px solid var(--red); box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: none; margin-bottom: 20px; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .tips-title { color: var(--blue); font-weight: bold; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .tips-content { font-size: 0.95rem; line-height: 1.5; color: #444; }
+
+        /* ボタン類 */
+        .btn { background: var(--blue); color: white; border: none; padding: 12px 20px; border-radius: 25px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; }
+        .btn-red { background: var(--red); }
+        
+        /* ログリスト */
+        .log-card { background: white; border-radius: 12px; padding: 15px; margin-top: 15px; border-bottom: 3px solid var(--blue); display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>UNIV-LOG</h1>
+    <div class="app-icon">
+        <div class="icon-part icon-blue"></div>
+        <div class="icon-part icon-white"></div>
+        <div class="icon-part icon-red"></div>
+    </div>
+    <h1 style="margin:0; font-size:1.2rem; letter-spacing:2px;">マルチログ</h1>
 </header>
 
 <main>
-    <button class="btn-add" onclick="toggleForm()">+ 記録を追加する</button>
-
-    <div class="search-container">
-        <input type="text" id="search" class="search-box" placeholder="🔍 過去の自分を検索..." oninput="render()">
+    <div id="camera-container">
+        <video id="video" autoplay playsinline></video>
+        <div id="qr-shutter"></div>
+        <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
-    <div id="filter-bar"></div>
+    <div id="ai-panel">
+        <div class="tips-title">💡 AI執事の先読みTips</div>
+        <div id="tips-text" class="tips-content">読み取り中...</div>
+        <button id="open-link" class="btn">このサイトを開く</button>
+        <button onclick="saveQR()" class="btn btn-red">このTipsを記録する</button>
+    </div>
 
-    <section id="form-panel" class="form-panel">
-        <div class="form-group"><label>ジャンル（プラモ、飲食店、映画など）</label><input type="text" id="category" placeholder="何でも自由に！"></div>
-        <div class="form-group"><label>タイトル</label><input type="text" id="title" placeholder="作品名や店名"></div>
-        <div class="form-group"><label>写真を選択 / カメラで撮る</label><input type="file" id="imageFile" accept="image/*" style="font-size:0.8rem;"></div>
-        <div class="form-group">
-            <label>評価（星をタップ！）</label>
-            <div class="star-rating">
-                <input type="radio" name="rate" id="s5" value="5"><label for="s5">★</label>
-                <input type="radio" name="rate" id="s4" value="4"><label for="s4">★</label>
-                <input type="radio" name="rate" id="s3" value="3"><label for="s3">★</label>
-                <input type="radio" name="rate" id="s2" value="2"><label for="s2">★</label>
-                <input type="radio" name="rate" id="s1" value="1"><label for="s1">★</label>
-            </div>
-        </div>
-        <div class="form-group"><label>メモ</label><textarea id="desc" rows="4" placeholder="感想を自由に綴ってくださいませ"></textarea></div>
-        <button onclick="saveLog()" class="btn-add" style="width:100%; background:var(--blue); box-shadow:0 4px 0 #00335a;">この内容でアーカイブ！</button>
-    </section>
-
-    <div id="log-feed"></div>
+    <div id="log-list">
+        <h3 style="color:var(--blue); border-bottom:2px solid var(--blue);">最近の知恵袋ログ</h3>
+        <div id="feed"></div>
+    </div>
 </main>
 
 <script>
-    let logs = JSON.parse(localStorage.getItem('unilog_v3')) || [];
-    let currentFilter = 'ALL';
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const aiPanel = document.getElementById('ai-panel');
+    const tipsText = document.getElementById('tips-text');
+    let lastUrl = "";
 
-    function toggleForm() {
-        const p = document.getElementById('form-panel');
-        p.style.display = p.style.display === 'block' ? 'none' : 'block';
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    }
+    // カメラ起動
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
+        video.srcObject = stream;
+        requestAnimationFrame(tick);
+    });
 
-    async function saveLog() {
-        const fileInput = document.getElementById('imageFile');
-        let imgData = "";
-        
-        if (fileInput.files && fileInput.files[0]) {
-            imgData = await new Promise(resolve => {
-                const reader = new FileReader();
-                reader.onload = e => resolve(e.target.result);
-                reader.readAsDataURL(fileInput.files[0]);
-            });
+    function tick() {
+        if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            canvas.height = video.videoHeight;
+            canvas.width = video.videoWidth;
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+            if (code && code.data !== lastUrl) {
+                lastUrl = code.data;
+                handleQRCode(code.data);
+            }
         }
-
-        const rate = document.querySelector('input[name="rate"]:checked')?.value || 0;
-
-        const data = {
-            id: Date.now(),
-            cat: document.getElementById('category').value || '未分類',
-            title: document.getElementById('title').value || '無題',
-            img: imgData,
-            rate: parseInt(rate),
-            desc: document.getElementById('desc').value
-        };
-
-        logs.unshift(data);
-        localStorage.setItem('unilog_v3', JSON.stringify(logs));
-        location.reload(); 
+        requestAnimationFrame(tick);
     }
 
-    function deleteLog(id) {
-        if(confirm('この思い出を消去してもよろしくて？')) {
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('unilog_v3', JSON.stringify(logs));
-            render();
-        }
-    }
+    // AI Tipsを生成する魔法
+    function handleQRCode(url) {
+        aiPanel.style.display = 'block';
+        let tip = "お嬢様、このQRコードの先には未知の扉が待っておりますわ。";
 
-    function render() {
-        const searchText = document.getElementById('search').value.toLowerCase();
+        // URLの中身をAIっぽく判別
+        if (url.includes("wikipedia")) tip = "ウィキペディアですわね！世界の叡智が詰まっておりますが、長居して時間を忘れないようお気をつけあそばせ。";
+        else if (url.includes("google")) tip = "検索の門ですわ。ここからお嬢様の知的好奇心が爆発いたしますのね。";
+        else if (url.includes("instagram") || url.includes("twitter") || url.includes("x.com")) tip = "SNSの海ですわ。お嬢様の『マルチログ』の宣伝チャンスかもしれませんわよ！";
+        else if (url.includes(".jp")) tip = "日本のサイトですわね。安心感がありますが、お嬢様の鋭い感性で中身を見極めてくださいませ。";
+        else if (url.includes("github")) tip = "開発者の聖地ですわ！お嬢様のライバル、あるいは仲間たちの知恵が眠っております。";
+        else tip = "このURL（" + new URL(url).hostname + "）は珍しい場所ですわ。AIの予測では、新しい発見がある確率85%ですわよ！";
+
+        tipsText.innerText = tip;
+        document.getElementById('open-link').onclick = () => window.open(url, '_blank');
         
-        const cats = ['ALL', ...new Set(logs.map(l => l.cat))];
-        document.getElementById('filter-bar').innerHTML = cats.map(c => 
-            `<div class="filter-tag ${currentFilter === c ? 'active' : ''}" onclick="currentFilter='${c}';render()">${c}</div>`
-        ).join('');
+        // スマホのバイブレーションでお知らせ（対応機種のみ）
+        if (navigator.vibrate) navigator.vibrate(200);
+    }
 
-        const filtered = logs.filter(l => {
-            const matchCat = (currentFilter === 'ALL' || l.cat === currentFilter);
-            const matchSearch = l.title.toLowerCase().includes(searchText) || l.desc.toLowerCase().includes(searchText);
-            return matchCat && matchSearch;
-        });
+    function saveQR() {
+        const logs = JSON.parse(localStorage.getItem('mulch_qr_logs')) || [];
+        logs.unshift({ title: lastUrl, tip: tipsText.innerText, date: new Date().toLocaleString() });
+        localStorage.setItem('mulch_qr_logs', JSON.stringify(logs.slice(0, 20)));
+        renderLogs();
+        alert("アーカイブいたしましたわ！");
+    }
 
-        document.getElementById('log-feed').innerHTML = filtered.map(l => `
+    function renderLogs() {
+        const logs = JSON.parse(localStorage.getItem('mulch_qr_logs')) || [];
+        document.getElementById('feed').innerHTML = logs.map(l => `
             <div class="log-card">
-                <img src="${l.img || 'https://via.placeholder.com/150?text=No+Photo'}" class="log-img" onclick="window.open(this.src)">
-                <div class="log-info">
-                    <span class="log-cat-tag">${l.cat}</span>
-                    <h3 class="log-title">${l.title}</h3>
-                    <div class="log-stars">${'★'.repeat(l.rate)}${'☆'.repeat(5-l.rate)}</div>
-                    <div class="log-desc">${l.desc}</div>
+                <div style="font-size:0.8rem;">
+                    <strong>${l.date}</strong><br>
+                    ${l.tip}
                 </div>
-                <button class="del-btn" onclick="deleteLog(${l.id})">×</button>
             </div>
         `).join('');
     }
 
-    render();
+    renderLogs();
 </script>
 </body>
 </html>
